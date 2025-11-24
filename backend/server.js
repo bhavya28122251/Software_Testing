@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const db = require('./db');
+
 const students = require('./routes/students');
 const courses = require('./routes/courses');
 const enroll = require('./routes/enrollments');
@@ -17,8 +18,8 @@ app.use('/api/enroll', enroll);
 app.use('/api/attendance', attendance);
 
 const PORT = process.env.PORT || 4000;
-db.init(); // create db & tables
 
+// RUN SERVER ONLY WHEN NOT TESTING
 if (require.main === module) {
     app.listen(PORT, () => console.log(`Backend listening on http://localhost:${PORT}`));
 }

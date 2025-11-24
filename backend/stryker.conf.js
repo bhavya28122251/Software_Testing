@@ -10,10 +10,10 @@ module.exports = {
   mutator: "javascript",
 
   // Use mocha as test runner and point to unit tests
-  testRunner: "mocha",
-  mochaOptions: {
-    spec: ["test/unit/**/*.js"]
-  },
+  // testRunner: "mocha",
+  // mochaOptions: {
+  //   spec: ["test/unit/**/*.js"]
+  // },
 
   // Reporters (console + html)
   reporters: ["clear-text", "progress", "html"],

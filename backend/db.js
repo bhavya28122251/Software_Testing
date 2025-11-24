@@ -1,146 +1,152 @@
-// backend/db.js  (sqlite3 async wrapper)
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
-const fs = require('fs');
+// backend/db.js
+// Exports a knex instance with small sqlite3-like helpers (.all, .get, .run)
+// and getDb() and init() helpers to keep existing code working.
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data', 'students.db');
+const knexLib = require('knex');
 
-let rawDb = null;
-let readyPromise = null;
+const knex = knexLib({
+  client: 'sqlite3',
+  connection: {
+    filename: process.env.TEST_SQLITE_FILE || './dev.sqlite3'
+  },
+  useNullAsDefault: true,
+  // For in-memory SQLite tests, ensure only one connection is used.
+  // This avoids "Unable to acquire a connection" and keeps :memory: stable.
+  pool: { min: 1, max: 1 }
+});
 
-function init() {
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+// allow code to call db.getDb() like your routes do
+knex.getDb = () => knex;
 
-  readyPromise = new Promise((resolve, reject) => {
-    rawDb = new sqlite3.Database(DB_PATH, (err) => {
-      if (err) {
-        console.error('Failed to open sqlite db:', err);
-        return reject(err);
-      }
-
-      // Create tables
-      const createSql = `
-        CREATE TABLE IF NOT EXISTS students (
-          id TEXT PRIMARY KEY,
-          admissionNo TEXT,
-          firstName TEXT,
-          lastName TEXT,
-          dob TEXT,
-          email TEXT,
-          phone TEXT,
-          address TEXT,
-          year TEXT,
-          notes TEXT,
-          createdAt INTEGER,
-          updatedAt INTEGER
-        );
-        CREATE TABLE IF NOT EXISTS courses (
-          id TEXT PRIMARY KEY,
-          code TEXT,
-          name TEXT,
-          instructor TEXT,
-          credits INTEGER
-        );
-        CREATE TABLE IF NOT EXISTS enrollments (
-          id TEXT PRIMARY KEY,
-          studentId TEXT,
-          courseId TEXT,
-          enrolledAt INTEGER
-        );
-        CREATE TABLE IF NOT EXISTS attendance (
-          id TEXT PRIMARY KEY,
-          studentId TEXT,
-          courseId TEXT,
-          date TEXT,
-          status TEXT
-        );
-      `;
-
-      rawDb.exec(createSql, (err) => {
-        if (err) {
-          console.error('Error creating tables:', err);
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
+// initialize schema if needed (safe to call multiple times)
+knex.init = async function initDB() {
+  // Students
+  if (!(await knex.schema.hasTable('students'))) {
+    await knex.schema.createTable('students', (t) => {
+      t.increments('id').primary();
+      t.string('admissionNo');
+      t.string('firstName');
+      t.string('lastName');
+      t.string('email');
+      t.string('year');
     });
-  });
-}
+  }
 
-function waitForReady() {
-  return readyPromise || Promise.resolve();
-}
-
-/**
- * Promise wrappers for run/get/all
- */
-function _run(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    rawDb.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve({ lastID: this.lastID, changes: this.changes });
+  // Courses
+  if (!(await knex.schema.hasTable('courses'))) {
+    await knex.schema.createTable('courses', (t) => {
+      t.increments('id').primary();
+      t.string('code');
+      t.string('title');
+      t.integer('credits');
     });
-  });
-}
+  }
 
-function _all(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    rawDb.all(sql, params, (err, rows) => {
-      if (err) return reject(err);
-      resolve(rows);
+  // Enrollments
+  if (!(await knex.schema.hasTable('enrollments'))) {
+    await knex.schema.createTable('enrollments', (t) => {
+      t.increments('id').primary();
+      t.integer('studentId').unsigned();
+      t.integer('courseId').unsigned();
+      t.string('semester');
     });
-  });
-}
+  }
 
-function _get(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    rawDb.get(sql, params, (err, row) => {
-      if (err) return reject(err);
-      resolve(row);
+  // Attendances (plural)
+  if (!(await knex.schema.hasTable('attendances'))) {
+    await knex.schema.createTable('attendances', (t) => {
+      t.increments('id').primary();
+      t.integer('studentId').unsigned();
+      t.integer('courseId').unsigned();
+      t.date('date');
+      t.boolean('present');
+      t.string('status');
     });
+  }
+
+  // Attendance (singular) - some legacy SQL uses this table name
+  if (!(await knex.schema.hasTable('attendance'))) {
+    await knex.schema.createTable('attendance', (t) => {
+      t.increments('id').primary();
+      t.integer('studentId').unsigned();
+      t.integer('courseId').unsigned();
+      t.date('date');
+      t.boolean('present');
+      t.string('status');
+    });
+  }
+};
+
+// --- Compatibility wrappers (sqlite3-like) ---
+// Support both callback-style usage and promise-style.
+
+function normalizeParams(params) {
+  if (params === undefined || params === null) return [];
+  return params;
+}
+
+// database.all(sql, params?, cb?)
+knex.all = function (sql, params, cb) {
+  if (typeof params === 'function') {
+    cb = params;
+    params = [];
+  }
+  params = normalizeParams(params);
+  const promise = knex.raw(sql, params).then((rawResult) => {
+    // normalize result to an array of rows
+    if (Array.isArray(rawResult)) return rawResult;
+    if (rawResult && rawResult.length) return rawResult;
+    if (rawResult && rawResult.rows) return rawResult.rows;
+    return rawResult;
   });
-}
 
-/**
- * transaction helper
- * Accepts an async function fn(tx) { await tx.run(...); ... }
- * and runs BEGIN/COMMIT/ROLLBACK around it.
- */
-function _transaction(fn) {
-  return (async (...args) => {
-    await _run('BEGIN');
-    try {
-      const result = await fn({
-        run: _run,
-        all: _all,
-        get: _get
-      }, ...args);
-      await _run('COMMIT');
-      return result;
-    } catch (err) {
-      await _run('ROLLBACK');
-      throw err;
-    }
+  if (typeof cb === 'function') {
+    promise.then(rows => cb(null, rows)).catch(err => cb(err));
+    return;
+  }
+  return promise;
+};
+
+// database.get(sql, params?, cb?) -> first row
+knex.get = function (sql, params, cb) {
+  if (typeof params === 'function') {
+    cb = params;
+    params = [];
+  }
+  params = normalizeParams(params);
+
+  const promise = knex.raw(sql, params).then((rawResult) => {
+    let rows = rawResult;
+    if (!Array.isArray(rows) && rawResult && rawResult.rows) rows = rawResult.rows;
+    if (Array.isArray(rows)) return rows[0];
+    return rows;
   });
-}
 
-/**
- * Compatibility: expose getDb() returning async API
- * - run(sql, params)
- * - all(sql, params)
- * - get(sql, params)
- * - transaction(fn) -> returns callable async function
- */
-function getDb() {
-  if (!rawDb) init();
-  return {
-    run: _run,
-    all: _all,
-    get: _get,
-    transaction: (fn) => _transaction(fn)
-  };
-}
+  if (typeof cb === 'function') {
+    promise.then(row => cb(null, row)).catch(err => cb(err));
+    return;
+  }
+  return promise;
+};
 
-module.exports = { init, getDb, waitForReady };
+// database.run(sql, params?, cb?) - run a statement (INSERT/UPDATE/DELETE)
+knex.run = function (sql, params, cb) {
+  if (typeof params === 'function') {
+    cb = params;
+    params = [];
+  }
+  params = normalizeParams(params);
+
+  const promise = knex.raw(sql, params).then((res) => {
+    // res can be a driver-specific object; return it as-is
+    return res;
+  });
+
+  if (typeof cb === 'function') {
+    promise.then(r => cb(null, r)).catch(err => cb(err));
+    return;
+  }
+  return promise;
+};
+
+module.exports = knex;
