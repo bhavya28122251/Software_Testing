@@ -125,16 +125,17 @@ router.post('/', async (req, res) => {
     const record = studentService.buildStudentRecord(payload);
     const database = db.getDb();
 
+    const id = 'S-' + Date.now();
     const result = await database.run(
       `INSERT INTO students
-      (admissionNo, firstName, lastName, dob, email, phone, address, year, notes, createdAt, updatedAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [record.admissionNo, record.firstName, record.lastName, record.dob,
-      record.email, record.phone, record.address, record.year, record.notes,
-      record.createdAt, record.updatedAt]
+      (id, admissionNo, firstName, lastName, dob, email, phone, address, year, notes, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, record.admissionNo, record.firstName, record.lastName, record.dob,
+        record.email, record.phone, record.address, record.year, record.notes,
+        record.createdAt, record.updatedAt]
     );
 
-    const created = await database.get("SELECT * FROM students WHERE id = ?", [result.lastID]);
+    const created = await database.get("SELECT * FROM students WHERE id = ?", [id]);
     res.status(201).json(studentService.rowToStudent(created));
 
   } catch (err) {

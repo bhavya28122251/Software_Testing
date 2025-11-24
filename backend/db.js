@@ -3,63 +3,74 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 
-const DB_PATH = path.join(__dirname, 'data', 'students.db');
+const DB_PATH = process.env.DB_PATH || path.join(__dirname, 'data', 'students.db');
 
 let rawDb = null;
+let readyPromise = null;
 
-/**
- * Initialize DB (create folder if needed, open DB, create tables if missing)
- */
 function init() {
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
-  rawDb = new sqlite3.Database(DB_PATH, (err) => {
-    if (err) {
-      console.error('Failed to open sqlite db:', err);
-      throw err;
-    }
-  });
+  readyPromise = new Promise((resolve, reject) => {
+    rawDb = new sqlite3.Database(DB_PATH, (err) => {
+      if (err) {
+        console.error('Failed to open sqlite db:', err);
+        return reject(err);
+      }
 
-  // Create tables (exec is fine here)
-  const createSql = `
-    CREATE TABLE IF NOT EXISTS students (
-      id TEXT PRIMARY KEY,
-      admissionNo TEXT,
-      firstName TEXT,
-      lastName TEXT,
-      dob TEXT,
-      email TEXT,
-      phone TEXT,
-      address TEXT,
-      year TEXT,
-      notes TEXT,
-      createdAt INTEGER,
-      updatedAt INTEGER
-    );
-    CREATE TABLE IF NOT EXISTS courses (
-      id TEXT PRIMARY KEY,
-      code TEXT,
-      name TEXT,
-      instructor TEXT
-    );
-    CREATE TABLE IF NOT EXISTS enrollments (
-      id TEXT PRIMARY KEY,
-      studentId TEXT,
-      courseId TEXT,
-      enrolledAt INTEGER
-    );
-    CREATE TABLE IF NOT EXISTS attendance (
-      id TEXT PRIMARY KEY,
-      studentId TEXT,
-      courseId TEXT,
-      date TEXT,
-      status TEXT
-    );
-  `;
-  rawDb.exec(createSql, (err) => {
-    if (err) console.error('Error creating tables:', err);
+      // Create tables
+      const createSql = `
+        CREATE TABLE IF NOT EXISTS students (
+          id TEXT PRIMARY KEY,
+          admissionNo TEXT,
+          firstName TEXT,
+          lastName TEXT,
+          dob TEXT,
+          email TEXT,
+          phone TEXT,
+          address TEXT,
+          year TEXT,
+          notes TEXT,
+          createdAt INTEGER,
+          updatedAt INTEGER
+        );
+        CREATE TABLE IF NOT EXISTS courses (
+          id TEXT PRIMARY KEY,
+          code TEXT,
+          name TEXT,
+          instructor TEXT,
+          credits INTEGER
+        );
+        CREATE TABLE IF NOT EXISTS enrollments (
+          id TEXT PRIMARY KEY,
+          studentId TEXT,
+          courseId TEXT,
+          enrolledAt INTEGER
+        );
+        CREATE TABLE IF NOT EXISTS attendance (
+          id TEXT PRIMARY KEY,
+          studentId TEXT,
+          courseId TEXT,
+          date TEXT,
+          status TEXT
+        );
+      `;
+
+      rawDb.exec(createSql, (err) => {
+        if (err) {
+          console.error('Error creating tables:', err);
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
   });
+}
+
+function waitForReady() {
+  return readyPromise || Promise.resolve();
 }
 
 /**
@@ -132,4 +143,4 @@ function getDb() {
   };
 }
 
-module.exports = { init, getDb };
+module.exports = { init, getDb, waitForReady };

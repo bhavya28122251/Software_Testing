@@ -169,9 +169,10 @@ router.post('/', async (req, res) => {
 
     const rec = courseService.buildCourseRecord(payload);
     const database = db.getDb();
-    const result = await database.run('INSERT INTO courses (code, name, instructor, credits) VALUES (?, ?, ?, ?)', [rec.code, rec.name, rec.instructor, rec.credits]);
+    const id = 'C-' + Date.now();
+    const result = await database.run('INSERT INTO courses (id, code, name, instructor, credits) VALUES (?, ?, ?, ?, ?)', [id, rec.code, rec.name, rec.instructor, rec.credits]);
     clearCache('courses:');
-    const created = await database.get('SELECT * FROM courses WHERE id = ?', [result.lastID]);
+    const created = await database.get('SELECT * FROM courses WHERE id = ?', [id]);
     res.status(201).json(courseService.rowToCourse(created));
   } catch (err) {
     console.error('POST /api/courses error', err);
@@ -253,8 +254,9 @@ router.post('/bulk', async (req, res) => {
         continue;
       }
       const rec = courseService.buildCourseRecord(p);
-      const result = await database.run('INSERT INTO courses (code,name,instructor,credits) VALUES (?,?,?,?)', [rec.code, rec.name, rec.instructor, rec.credits]);
-      const created = await database.get('SELECT * FROM courses WHERE id = ?', [result.lastID]);
+      const id = 'C-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      const result = await database.run('INSERT INTO courses (id, code,name,instructor,credits) VALUES (?,?,?,?,?)', [id, rec.code, rec.name, rec.instructor, rec.credits]);
+      const created = await database.get('SELECT * FROM courses WHERE id = ?', [id]);
       inserted.push({ ok: true, record: courseService.rowToCourse(created) });
     }
     clearCache('courses:');
@@ -279,7 +281,7 @@ router.post('/import-csv', async (req, res) => {
     const lines = csv.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
     if (lines.length < 2) return res.status(400).json({ error: 'no rows' });
     const header = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    const expected = ['code','name','instructor','credits'];
+    const expected = ['code', 'name', 'instructor', 'credits'];
     const mapIdx = {};
     expected.forEach((h) => { mapIdx[h] = header.indexOf(h); });
 
@@ -294,13 +296,14 @@ router.post('/import-csv', async (req, res) => {
       });
       const v = validateCoursePayloadStrict(payload);
       if (!v.ok) {
-        results.push({ ok: false, reason: v.reason, row: i+1 });
+        results.push({ ok: false, reason: v.reason, row: i + 1 });
         continue;
       }
       const rec = courseService.buildCourseRecord(payload);
-      const r = await database.run('INSERT INTO courses (code,name,instructor,credits) VALUES (?,?,?,?)', [rec.code, rec.name, rec.instructor, rec.credits]);
-      const created = await database.get('SELECT * FROM courses WHERE id = ?', [r.lastID]);
-      results.push({ ok: true, row: i+1, record: courseService.rowToCourse(created) });
+      const id = 'C-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      const r = await database.run('INSERT INTO courses (id, code,name,instructor,credits) VALUES (?,?,?,?,?)', [id, rec.code, rec.name, rec.instructor, rec.credits]);
+      const created = await database.get('SELECT * FROM courses WHERE id = ?', [id]);
+      results.push({ ok: true, row: i + 1, record: courseService.rowToCourse(created) });
     }
     clearCache('courses:');
     res.json({ results });
@@ -318,7 +321,7 @@ router.get('/export/csv', async (req, res) => {
   try {
     const database = db.getDb();
     const rows = await database.all('SELECT id, code, name, instructor, credits FROM courses');
-    const header = ['id','code','name','instructor','credits'];
+    const header = ['id', 'code', 'name', 'instructor', 'credits'];
     const csv = toCsv(rows, header);
     res.setHeader('Content-Type', 'text/csv');
     res.send(csv);
