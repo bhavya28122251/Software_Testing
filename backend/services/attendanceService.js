@@ -35,6 +35,11 @@ function parseCsv(text = "") {
     const row = {};
     header.forEach((h) => (row[h] = cols[idx[h]] || ""));
 
+    if (!row.studentId || !row.courseId || !row.status) {
+      errors.push("missing required fields");
+      continue;
+    }
+
     if (!isValidDateISO(row.date)) errors.push("invalid date");
     row.status = row.status.toLowerCase();
 

@@ -18,4 +18,9 @@ app.use('/api/attendance', attendance);
 
 const PORT = process.env.PORT || 4000;
 db.init(); // create db & tables
-app.listen(PORT, () => console.log(`Backend listening on http://localhost:${PORT}`));
+
+if (require.main === module) {
+    app.listen(PORT, () => console.log(`Backend listening on http://localhost:${PORT}`));
+}
+
+module.exports = app;

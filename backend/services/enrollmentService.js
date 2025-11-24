@@ -1,8 +1,8 @@
 // services/enrollmentService.js
 
 function validateEnrollment(payload = {}) {
-  if (!payload.studentId || !payload.courseId)
-    return { ok: false };
+  if (!payload || !payload.studentId || !payload.courseId)
+    return { ok: false, reason: 'Missing studentId or courseId' };
   return { ok: true };
 }
 

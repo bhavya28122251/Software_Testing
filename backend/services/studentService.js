@@ -60,6 +60,9 @@ function isAdult(dob, limit = 18) {
 // Validation of student input
 function validateStudentPayload(payload = {}) {
   const errors = [];
+  if (!payload) {
+    return { valid: false, errors: ["firstName required", "lastName required"] };
+  }
   if (!payload.firstName) errors.push("firstName required");
   if (!payload.lastName) errors.push("lastName required");
   if (payload.email) {

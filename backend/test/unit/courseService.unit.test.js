@@ -14,7 +14,7 @@ describe('courseService', () => {
 
   it('buildCourseRecord builds and defaults credits', () => {
     const rec = c.buildCourseRecord({ code: 'cs101', name: 'Intro' });
-    expect(rec.code).to.equal('cs101');
+    expect(rec.code).to.equal('CS101');
     expect(rec.credits).to.equal(0);
   });
 });

@@ -39,9 +39,18 @@ function isValidCredits(c) {
 }
 
 function validateCoursePayload(p = {}) {
-  if (!p.code || !p.name) return { ok: false };
+  if (!p || !p.code || !p.name) return { ok: false };
   if (p.credits && !isValidCredits(p.credits)) return { ok: false };
   return { ok: true };
+}
+
+function buildCourseRecord(p = {}) {
+  return {
+    code: normalizeCourseCode(p.code),
+    name: p.name || "",
+    instructor: p.instructor || "",
+    credits: p.credits || 0,
+  };
 }
 
 function matchesQuery(q = "", course = {}) {
@@ -62,5 +71,6 @@ module.exports = {
   validateInstructorName,
   isValidCredits,
   validateCoursePayload,
+  buildCourseRecord,
   matchesQuery,
 };

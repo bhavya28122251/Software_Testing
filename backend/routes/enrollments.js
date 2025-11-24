@@ -16,6 +16,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const enrollmentService = require('../services/enrollmentService');
+const { v4: uuidv4 } = require('uuid');
 
 /* -----------------------------
    Helpers
@@ -83,8 +84,9 @@ router.post('/', async (req, res) => {
     const exists = await database.get('SELECT * FROM enrollments WHERE studentId = ? AND courseId = ?', [rec.studentId, rec.courseId]);
     if (exists) return res.status(409).json({ error: 'already enrolled' });
 
-    const result = await database.run('INSERT INTO enrollments (studentId, courseId, enrolledAt) VALUES (?, ?, ?)', [rec.studentId, rec.courseId, rec.enrolledAt]);
-    const created = await database.get('SELECT * FROM enrollments WHERE id = ?', [result.lastID]);
+    const id = uuidv4();
+    const result = await database.run('INSERT INTO enrollments (id, studentId, courseId, enrolledAt) VALUES (?, ?, ?, ?)', [id, rec.studentId, rec.courseId, rec.enrolledAt]);
+    const created = await database.get('SELECT * FROM enrollments WHERE id = ?', [id]);
     res.status(201).json(created);
   } catch (err) {
     console.error('POST /api/enroll error', err);
@@ -114,8 +116,9 @@ router.post('/bulk', async (req, res) => {
           results.push({ ok: false, reason: 'duplicate', payload: p });
           continue;
         }
-        const r = await database.run('INSERT INTO enrollments (studentId, courseId, enrolledAt) VALUES (?, ?, ?)', [rec.studentId, rec.courseId, rec.enrolledAt]);
-        const created = await database.get('SELECT * FROM enrollments WHERE id = ?', [r.lastID]);
+        const id = uuidv4();
+        const r = await database.run('INSERT INTO enrollments (id, studentId, courseId, enrolledAt) VALUES (?, ?, ?, ?)', [id, rec.studentId, rec.courseId, rec.enrolledAt]);
+        const created = await database.get('SELECT * FROM enrollments WHERE id = ?', [id]);
         results.push({ ok: true, record: created });
       } catch (e) {
         results.push({ ok: false, reason: e.message, payload: p });
@@ -234,8 +237,9 @@ router.post('/ensure', async (req, res) => {
     if (exists) return res.json({ ok: true, existing: true, record: exists });
 
     const rec = enrollmentService.buildEnrollmentRecord(payload);
-    const r = await database.run('INSERT INTO enrollments (studentId, courseId, enrolledAt) VALUES (?, ?, ?)', [rec.studentId, rec.courseId, rec.enrolledAt]);
-    const created = await database.get('SELECT * FROM enrollments WHERE id = ?', [r.lastID]);
+    const id = uuidv4();
+    const r = await database.run('INSERT INTO enrollments (id, studentId, courseId, enrolledAt) VALUES (?, ?, ?, ?)', [id, rec.studentId, rec.courseId, rec.enrolledAt]);
+    const created = await database.get('SELECT * FROM enrollments WHERE id = ?', [id]);
     res.json({ ok: true, existing: false, record: created });
   } catch (err) {
     console.error('POST /api/enroll/ensure error', err);

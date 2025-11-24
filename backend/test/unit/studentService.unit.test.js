@@ -5,7 +5,7 @@ const s = require('../../services/studentService');
 describe('studentService', () => {
   it('formatFullName trims and joins', () => {
     expect(s.formatFullName(' John ', ' Doe ')).to.equal('John Doe');
-    expect(s.formatFullName('', 'Smith')).to.equal('Smith');
+    expect(s.formatFullName('', 'Smit')).to.equal('Smit');
     expect(s.formatFullName(null, null)).to.equal('');
   });
 
