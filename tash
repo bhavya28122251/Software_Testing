@@ -1,0 +1,221 @@
+[1mdiff --cc backend/data/students.db[m
+[1mindex 113df71,ff2120c..0000000[m
+Binary files differ
+[1mdiff --git a/backend/node_modules/.bin/_mocha b/backend/node_modules/.bin/_mocha[m
+[1mdeleted file mode 100644[m
+[1mindex 47a3b10..0000000[m
+[1m--- a/backend/node_modules/.bin/_mocha[m
+[1m+++ /dev/null[m
+[36m@@ -1,12 +0,0 @@[m
+[31m-#!/bin/sh[m
+[31m-basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")[m
+[31m-[m
+[31m-case `uname` in[m
+[31m-    *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w "$basedir"`;;[m
+[31m-esac[m
+[31m-[m
+[31m-if [ -x "$basedir/node" ]; then[m
+[31m-  exec "$basedir/node"  "$basedir/../mocha/bin/_mocha" "$@"[m
+[31m-else [m
+[31m-  exec node  "$basedir/../mocha/bin/_mocha" "$@"[m
+[31m-fi[m
+[1mdiff --git a/backend/node_modules/.bin/_mocha.cmd b/backend/node_modules/.bin/_mocha.cmd[m
+[1mdeleted file mode 100644[m
+[1mindex 417aa20..0000000[m
+[1m--- a/backend/node_modules/.bin/_mocha.cmd[m
+[1m+++ /dev/null[m
+[36m@@ -1,17 +0,0 @@[m
+[31m-@ECHO off[m
+[31m-GOTO start[m
+[31m-:find_dp0[m
+[31m-SET dp0=%~dp0[m
+[31m-EXIT /b[m
+[31m-:start[m
+[31m-SETLOCAL[m
+[31m-CALL :find_dp0[m
+[31m-[m
+[31m-IF EXIST "%dp0%\node.exe" ([m
+[31m-  SET "_prog=%dp0%\node.exe"[m
+[31m-) ELSE ([m
+[31m-  SET "_prog=node"[m
+[31m-  SET PATHEXT=%PATHEXT:;.JS;=;%[m
+[31m-)[m
+[31m-[m
+[31m-endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\..\mocha\bin\_mocha" %*[m
+[1mdiff --git a/backend/node_modules/.bin/_mocha.ps1 b/backend/node_modules/.bin/_mocha.ps1[m
+[1mdeleted file mode 100644[m
+[1mindex c17fc71..0000000[m
+[1m--- a/backend/node_modules/.bin/_mocha.ps1[m
+[1m+++ /dev/null[m
+[36m@@ -1,28 +0,0 @@[m
+[31m-#!/usr/bin/env pwsh[m
+[31m-$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent[m
+[31m-[m
+[31m-$exe=""[m
+[31m-if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {[m
+[31m-  # Fix case when both the Windows and Linux builds of Node[m
+[31m-  # are installed in the same directory[m
+[31m-  $exe=".exe"[m
+[31m-}[m
+[31m-$ret=0[m
+[31m-if (Test-Path "$basedir/node$exe") {[m
+[31m-  # Support pipeline input[m
+[31m-  if ($MyInvocation.ExpectingInput) {[m
+[31m-    $input | & "$basedir/node$exe"  "$basedir/../mocha/bin/_mocha" $args[m
+[31m-  } else {[m
+[31m-    & "$basedir/node$exe"  "$basedir/../mocha/bin/_mocha" $args[m
+[31m-  }[m
+[31m-  $ret=$LASTEXITCODE[m
+[31m-} else {[m
+[31m-  # Support pipeline input[m
+[31m-  if ($MyInvocation.ExpectingInput) {[m
+[31m-    $input | & "node$exe"  "$basedir/../mocha/bin/_mocha" $args[m
+[31m-  } else {[m
+[31m-    & "node$exe"  "$basedir/../mocha/bin/_mocha" $args[m
+[31m-  }[m
+[31m-  $ret=$LASTEXITCODE[m
+[31m-}[m
+[31m-exit $ret[m
+[1mdiff --git a/backend/node_modules/.bin/baseline-browser-mapping b/backend/node_modules/.bin/baseline-browser-mapping[m
+[1mdeleted file mode 100644[m
+[1mindex 73eac6d..0000000[m
+[1m--- a/backend/node_modules/.bin/baseline-browser-mapping[m
+[1m+++ /dev/null[m
+[36m@@ -1,12 +0,0 @@[m
+[31m-#!/bin/sh[m
+[31m-basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")[m
+[31m-[m
+[31m-case `uname` in[m
+[31m-    *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w "$basedir"`;;[m
+[31m-esac[m
+[31m-[m
+[31m-if [ -x "$basedir/node" ]; then[m
+[31m-  exec "$basedir/node"  "$basedir/../baseline-browser-mapping/dist/cli.js" "$@"[m
+[31m-else [m
+[31m-  exec node  "$basedir/../baseline-browser-mapping/dist/cli.js" "$@"[m
+[31m-fi[m
+[1mdiff --git a/backend/node_modules/.bin/baseline-browser-mapping.cmd b/backend/node_modules/.bin/baseline-browser-mapping.cmd[m
+[1mdeleted file mode 100644[m
+[1mindex 7db3642..0000000[m
+[1m--- a/backend/node_modules/.bin/baseline-browser-mapping.cmd[m
+[1m+++ /dev/null[m
+[36m@@ -1,17 +0,0 @@[m
+[31m-@ECHO off[m
+[31m-GOTO start[m
+[31m-:find_dp0[m
+[31m-SET dp0=%~dp0[m
+[31m-EXIT /b[m
+[31m-:start[m
+[31m-SETLOCAL[m
+[31m-CALL :find_dp0[m
+[31m-[m
+[31m-IF EXIST "%dp0%\node.exe" ([m
+[31m-  SET "_prog=%dp0%\node.exe"[m
+[31m-) ELSE ([m
+[31m-  SET "_prog=node"[m
+[31m-  SET PATHEXT=%PATHEXT:;.JS;=;%[m
+[31m-)[m
+[31m-[m
+[31m-endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\..\baseline-browser-mapping\dist\cli.js" %*[m
+[1mdiff --git a/backend/node_modules/.bin/baseline-browser-mapping.ps1 b/backend/node_modules/.bin/baseline-browser-mapping.ps1[m
+[1mdeleted file mode 100644[m
+[1mindex e241c1d..0000000[m
+[1m--- a/backend/node_modules/.bin/baseline-browser-mapping.ps1[m
+[1m+++ /dev/null[m
+[36m@@ -1,28 +0,0 @@[m
+[31m-#!/usr/bin/env pwsh[m
+[31m-$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent[m
+[31m-[m
+[31m-$exe=""[m
+[31m-if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {[m
+[31m-  # Fix case when both the Windows and Linux builds of Node[m
+[31m-  # are installed in the same directory[m
+[31m-  $exe=".exe"[m
+[31m-}[m
+[31m-$ret=0[m
+[31m-if (Test-Path "$basedir/node$exe") {[m
+[31m-  # Support pipeline input[m
+[31m-  if ($MyInvocation.ExpectingInput) {[m
+[31m-    $input | & "$basedir/node$exe"  "$basedir/../baseline-browser-mapping/dist/cli.js" $args[m
+[31m-  } else {[m
+[31m-    & "$basedir/node$exe"  "$basedir/../baseline-browser-mapping/dist/cli.js" $args[m
+[31m-  }[m
+[31m-  $ret=$LASTEXITCODE[m
+[31m-} else {[m
+[31m-  # Support pipeline input[m
+[31m-  if ($MyInvocation.ExpectingInput) {[m
+[31m-    $input | & "node$exe"  "$basedir/../baseline-browser-mapping/dist/cli.js" $args[m
+[31m-  } else {[m
+[31m-    & "node$exe"  "$basedir/../baseline-browser-mapping/dist/cli.js" $args[m
+[31m-  }[m
+[31m-  $ret=$LASTEXITCODE[m
+[31m-}[m
+[31m-exit $ret[m
+[1mdiff --git a/backend/node_modules/.bin/browserslist b/backend/node_modules/.bin/browserslist[m
+[1mdeleted file mode 100644[m
+[1mindex 68dd69d..0000000[m
+[1m--- a/backend/node_modules/.bin/browserslist[m
+[1m+++ /dev/null[m
+[36m@@ -1,12 +0,0 @@[m
+[31m-#!/bin/sh[m
+[31m-basedir=$(dirname "$(echo "$0" | sed -e 's,\\,/,g')")[m
+[31m-[m
+[31m-case `uname` in[m
+[31m-    *CYGWIN*|*MINGW*|*MSYS*) basedir=`cygpath -w "$basedir"`;;[m
+[31m-esac[m
+[31m-[m
+[31m-if [ -x "$basedir/node" ]; then[m
+[31m-  exec "$basedir/node"  "$basedir/../browserslist/cli.js" "$@"[m
+[31m-else [m
+[31m-  exec node  "$basedir/../browserslist/cli.js" "$@"[m
+[31m-fi[m
+[1mdiff --git a/backend/node_modules/.bin/browserslist.cmd b/backend/node_modules/.bin/browserslist.cmd[m
+[1mdeleted file mode 100644[m
+[1mindex f93c251..0000000[m
+[1m--- a/backend/node_modules/.bin/browserslist.cmd[m
+[1m+++ /dev/null[m
+[36m@@ -1,17 +0,0 @@[m
+[31m-@ECHO off[m
+[31m-GOTO start[m
+[31m-:find_dp0[m
+[31m-SET dp0=%~dp0[m
+[31m-EXIT /b[m
+[31m-:start[m
+[31m-SETLOCAL[m
+[31m-CALL :find_dp0[m
+[31m-[m
+[31m-IF EXIST "%dp0%\node.exe" ([m
+[31m-  SET "_prog=%dp0%\node.exe"[m
+[31m-) ELSE ([m
+[31m-  SET "_prog=node"[m
+[31m-  SET PATHEXT=%PATHEXT:;.JS;=;%[m
+[31m-)[m
+[31m-[m
+[31m-endLocal & goto #_undefined_# 2>NUL || title %COMSPEC% & "%_prog%"  "%dp0%\..\browserslist\cli.js" %*[m
+[1mdiff --git a/backend/node_modules/.bin/browserslist.ps1 b/backend/node_modules/.bin/browserslist.ps1[m
+[1mdeleted file mode 100644[m
+[1mindex 01e10a0..0000000[m
+[1m--- a/backend/node_modules/.bin/browserslist.ps1[m
+[1m+++ /dev/null[m
+[36m@@ -1,28 +0,0 @@[m
+[31m-#!/usr/bin/env pwsh[m
+[31m-$basedir=Split-Path $MyInvocation.MyCommand.Definition -Parent[m
+[31m-[m
+[31m-$exe=""[m
+[31m-if ($PSVersionTable.PSVersion -lt "6.0" -or $IsWindows) {[m
+[31m-  # Fix case when both the Windows and Linux builds of Node[m
+[31m-  # are installed in the same directory[m
+[31m-  $exe=".exe"[m
+[31m-}[m
+[31m-$ret=0[m
+[31m-if (Test-Path "$basedir/node$exe") {[m
+[31m-  # Support pipeline input[m
+[31m-  if ($MyInvocation.ExpectingInput) {[m
+[31m-    $input | & "$basedir/node$exe"  "$basedir/../browserslist/cli.js" $args[m
+[31m-  } else {[m
+[31m-    & "$basedir/node$exe"  "$basedir/../browserslist/cli.js" $args[m
+[31m-  }[m
+[31m-  $ret=$LASTEXITCODE[m
+[31m-} else {[m
+[31m-  # Support pipeline input[m
+[31m-  if ($MyInvocation.Expe
