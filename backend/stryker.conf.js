@@ -3,28 +3,53 @@
  * @type {import('@stryker-mutator/api/core').StrykerOptions}
  */
 module.exports = {
-  // Mutate only the service files (unit-level)
+  // Mutate only the service files for unit testing
   mutate: ["services/**/*.js"],
 
-  // JS mutator (default)
-  mutator: "javascript",
+  // Use the JavaScript mutator with ONLY the operators we want
+  mutator: {
+    name: "javascript",
+    excludedMutations: [
+      // Disable all operators EXCEPT the 6 we need
 
-  // Use mocha as test runner and point to unit tests
-  // testRunner: "mocha",
-  // mochaOptions: {
-  //   spec: ["test/unit/**/*.js"]
-  // },
+      // We KEEP:
+      // BooleanSubstitution
+      // LogicalOperator
+      // EqualityOperator
+      // ConditionalBoundary
+      // StringLiteral
+      // BlockStatement
 
-  // Reporters (console + html)
+      // We DISABLE everything else:
+      "ArithmeticOperator",
+      "ArrayDeclarator",
+      "ArrowFunction",
+      "AssignmentExpression",
+      "BinaryExpression",
+      "BlockStatementDeletion",
+      "ConditionalExpression",
+      "ObjectLiteral",
+      "PostfixUnaryOperator",
+      "PrefixUnaryOperator",
+      "RegexLiteral",
+      "SwitchCase",
+      "UpdateOperator",
+      "MethodExpression",
+      "CallExpression",
+      "ReturnStatement",
+      "ThrowStatement"
+    ]
+  },
+
+  // Reporters for output
   reporters: ["clear-text", "progress", "html"],
   htmlReporter: {
     baseDir: "mutation-report/unit"
   },
 
-  // perTest gives mapping of which test killed which mutant (slower)
+  // Map which test killed which mutant
   coverageAnalysis: "perTest",
 
-  // tuning
   concurrency: 4,
   timeoutMS: 60000
 };
