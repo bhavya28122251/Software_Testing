@@ -4,11 +4,6 @@ const router = express.Router();
 const db = require('../db');
 const studentService = require('../services/studentService');
 
-/**
- * Helpers to validate, normalize and fetch inserted rows robustly.
- * These add meaningful LOC by encapsulating logic.
- */
-
 function normalizeStudentPayload(payload) {
   // ensure strings, provide defaults, keep minimal fields required by schema
   return {

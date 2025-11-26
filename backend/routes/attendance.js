@@ -28,7 +28,7 @@ async function fetchCreated(database, maybeId, whereClause, params) {
     try {
       const byId = await database.get(`SELECT * FROM attendance WHERE id = ?`, [maybeId]);
       if (byId) return byId;
-    } catch (e) { /* fallback below */ }
+    } catch (e) { /* fallback below */}
   }
   // fallback: get newest matching row
   const row = await database.get(`SELECT * FROM attendance WHERE ${whereClause} ORDER BY id DESC LIMIT 1`, params);
