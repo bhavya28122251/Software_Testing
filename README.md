@@ -82,7 +82,7 @@ Total Mutants Survived: 106
 
 ![Screenshot](img1.jpeg)
 
-Integration MUTATION TESTING RESULTS
+INTEGRATION MUTATION TESTING RESULTS
 
 Overall Unit Mutation Score: 32.09%
 
