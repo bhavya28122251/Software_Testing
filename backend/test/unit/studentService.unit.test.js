@@ -1,4 +1,3 @@
-// test/unit/studentService.unit.test.js
 const { expect } = require('chai');
 const s = require('../../services/studentService');
 

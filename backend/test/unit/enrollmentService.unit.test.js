@@ -1,4 +1,3 @@
-// test/unit/enrollmentService.unit.test.js
 const { expect } = require('chai');
 const e = require('../../services/enrollmentService');
 

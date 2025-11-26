@@ -1,4 +1,3 @@
-// test/integration/students.test.js
 const { expect } = require('chai');
 const request = require('supertest');
 const { reset, knex } = require('../helpers/dbHelper');
@@ -11,7 +10,7 @@ before(async function () {
 });
 
 after(async function () {
-  try { await knex.destroy(); } catch (e) {}
+  try { await knex.destroy(); } catch (e) { }
 });
 
 function hasErrorShape(body) {
@@ -72,7 +71,7 @@ describe('Students Integration Tests (safe)', function () {
       const res = await request(app).post('/api/students').send({
         admissionNo: 'ERR01', firstName: 'Err', lastName: 'User', email: 'err@t.test'
       });
-      expect([500,400,201]).to.include(res.status);
+      expect([500, 400, 201]).to.include(res.status);
       if (res.status === 500) expect(hasErrorShape(res.body)).to.equal(true);
     } finally {
       await reset();
@@ -82,8 +81,7 @@ describe('Students Integration Tests (safe)', function () {
   it('POST /api/students → invalid email formats should return 400 or 201 consistently', async function () {
     const badEmail = { admissionNo: `E${Date.now()}`, firstName: 'Bad', lastName: 'Email', email: 'not-an-email' };
     const res = await request(app).post('/api/students').send(badEmail);
-    // Accept either 400 (validation) or 201 (not validated)
-    expect([201,400]).to.include(res.status);
+    expect([201, 400]).to.include(res.status);
     if (res.status === 400) expect(hasErrorShape(res.body)).to.equal(true);
   });
 });
