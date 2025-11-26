@@ -3,16 +3,14 @@
  * @type {import('@stryker-mutator/api/core').StrykerOptions}
  */
 module.exports = {
-  // Mutate only the service files for unit testing
   mutate: ["services/**/*.js"],
 
-  // Use the JavaScript mutator with ONLY the operators we want
+  
   mutator: {
     name: "javascript",
     excludedMutations: [
-      // Disable all operators EXCEPT the 6 we need
+      // Disabled all operators EXCEPT these 6:
 
-      // We KEEP:
       // BooleanSubstitution
       // LogicalOperator
       // EqualityOperator
@@ -20,7 +18,7 @@ module.exports = {
       // StringLiteral
       // BlockStatement
 
-      // We DISABLE everything else:
+     
       "ArithmeticOperator",
       "ArrayDeclarator",
       "ArrowFunction",
@@ -41,13 +39,13 @@ module.exports = {
     ]
   },
 
-  // Reporters for output
+
   reporters: ["clear-text", "progress", "html"],
   htmlReporter: {
     baseDir: "mutation-report/unit"
   },
 
-  // Map which test killed which mutant
+  
   coverageAnalysis: "perTest",
 
   concurrency: 4,
